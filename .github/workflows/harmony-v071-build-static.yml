@@ -67,7 +67,6 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-          cache: maven
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6

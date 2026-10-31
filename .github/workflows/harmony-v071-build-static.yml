@@ -1,0 +1,149 @@
+
+name: HARMONY v0.7.1 - Java 21 Build Verification and Static Feature Extraction
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_parallel:
+        description: Maximum repositories to process concurrently
+        required: false
+        default: "4"
+        type: choice
+        options: ["2", "4", "6"]
+  push:
+    branches: [main]
+    paths:
+      - "data/java21_candidate_manifest_v07.csv"
+      - "scripts/harmony_v071/**"
+      - ".github/workflows/harmony-v071-build-static.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: harmony-v071-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Validate candidate manifest and create matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - name: Checkout research repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate manifest
+        id: matrix
+        run: |
+          MATRIX="$(python scripts/harmony_v071/prepare_matrix.py \
+            --manifest data/java21_candidate_manifest_v07.csv)"
+          echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
+          echo "Candidate matrix: ${MATRIX}"
+
+  verify:
+    name: ${{ matrix.candidate_id }} - Java 21 build and static analysis
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      max-parallel: ${{ fromJSON(inputs.max_parallel || '4') }}
+      matrix:
+        include: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+
+    steps:
+      - name: Checkout HARMONY research repository
+        uses: actions/checkout@v6
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: "8.14.3"
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Maven and Python AST dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y maven
+          python -m pip install --upgrade pip
+          python -m pip install -r scripts/harmony_v071/requirements.txt
+
+      - name: Verify toolchain
+        run: |
+          java -version
+          javac -version
+          mvn -version
+          gradle --version
+          python --version
+          git --version
+
+      - name: Clone pinned repository, build, and extract static features
+        env:
+          CANDIDATE_ID: ${{ matrix.candidate_id }}
+        run: |
+          python scripts/harmony_v071/run_candidate.py \
+            --manifest data/java21_candidate_manifest_v07.csv \
+            --candidate-id "${CANDIDATE_ID}" \
+            --output-dir "results/${CANDIDATE_ID}"
+
+      - name: Upload candidate result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: harmony-v071-${{ matrix.candidate_id }}
+          path: results/${{ matrix.candidate_id }}/
+          if-no-files-found: warn
+          retention-days: 60
+
+  aggregate:
+    name: Aggregate HARMONY v0.7.1 dataset
+    needs: [prepare, verify]
+    if: always() && needs.prepare.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout HARMONY research repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download candidate artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: harmony-v071-*
+          path: results/merged
+          merge-multiple: true
+
+      - name: Aggregate build and static feature results
+        run: |
+          python scripts/harmony_v071/aggregate_results.py \
+            --input-dir results/merged \
+            --output-dir results/harmony_v071
+
+      - name: Upload consolidated dataset
+        uses: actions/upload-artifact@v4
+        with:
+          name: harmony-v071-consolidated-${{ github.run_id }}
+          path: results/harmony_v071/
+          if-no-files-found: error
+          retention-days: 90

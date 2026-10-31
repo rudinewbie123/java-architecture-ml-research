@@ -1,0 +1,61 @@
+name: Java 21 AST architecture metrics
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "data/java21_strict_manifest.csv"
+      - "scripts/ast/**"
+      - "scripts/run_ast_metrics.py"
+      - ".github/workflows/java21-ast-metrics.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  ast-analysis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout research protocol
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download JavaParser dependency
+        run: |
+          mkdir -p tools
+          curl --fail --location --retry 3 \
+            https://repo.maven.apache.org/maven2/com/github/javaparser/javaparser-core/3.26.3/javaparser-core-3.26.3.jar \
+            --output tools/javaparser-core-3.26.3.jar
+          sha256sum tools/javaparser-core-3.26.3.jar
+
+      - name: Verify toolchain
+        run: |
+          java -version
+          javac -version
+          python --version
+
+      - name: Run AST metrics
+        run: python scripts/run_ast_metrics.py
+
+      - name: Upload AST metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: java21-ast-metrics-${{ github.run_id }}
+          path: results/ast_metrics/**
+          if-no-files-found: warn
+          retention-days: 30

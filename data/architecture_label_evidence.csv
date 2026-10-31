@@ -1,0 +1,6 @@
+candidate_id,declared_architecture_label,evidence_url,evidence_type,reviewer_id,verification_status,notes
+JAVA-P013,modular_monolith,,,,UNVERIFIED,Label inherited from pilot manifest; require repository documentation and architecture inspection
+JAVA-P014,modular_monolith,,,,UNVERIFIED,Label inherited from pilot manifest; require repository documentation and architecture inspection
+JAVA-P012,modular_monolith,,,,UNVERIFIED,Label inherited from pilot manifest; require repository documentation and architecture inspection
+JAVA-P005,microservices,,,,UNVERIFIED,Label inherited from pilot manifest; require repository documentation and architecture inspection
+JAVA-P009,serverless_hybrid,,,,UNVERIFIED,Label inherited from pilot manifest; require repository documentation and architecture inspection

@@ -1,0 +1,15 @@
+feature_name,level,operational_definition,source_or_method,measurement_unit,validity_status,limitations
+method_count,class,Number of method declarations directly contained in a parsed type,JavaParser AST,count,EXTRACTED,Does not include inherited methods; constructors are not counted
+field_count,class,Number of field variables directly declared in a parsed type,JavaParser AST,count,EXTRACTED,Does not include inherited fields
+wmc_ast,class,Sum of method-level branch complexity proxies for methods declared in a type,JavaParser AST,count,PROXY,Project-specific operationalization; constructor initializer lambda and switch handling require further review
+rfc_source_proxy,class,Declared method count plus distinct method-call names found in method bodies,JavaParser AST,count,PROXY,No symbol resolution; method names may conflate overloads receivers and external calls
+cbo_local_type_proxy,class,Count of unique simple names matching project type declarations in type syntax nodes,JavaParser AST,count,PROXY,No fully qualified symbol resolution; name collisions possible; not standard CK CBO
+lcom1_name_based_proxy,class,max(P-Q,0) using field-name references in pairs of declared methods,JavaParser AST,count,PROXY,Name-based heuristic; shadowing accessors inheritance and nested types can distort cohesion
+physical_loc,class,Inclusive line span of the type declaration,JavaParser source range,lines,EXTRACTED,Not logical LOC; comments and blank lines are included
+package_node_count,repository,Number of unique Java packages in source import graph,advanced static analyzer,count,EXTRACTED,Depends on package declaration parsing and repository source scope
+package_dependency_edge_count,repository,Number of unique directed package import edges,advanced static analyzer,count,EXTRACTED,Partial graph; imports may be external or unresolved
+package_dependency_density,repository,Directed package edge count divided by N*(N-1),advanced static analyzer,ratio,DERIVED,Scale-sensitive; do not interpret as architecture quality
+cyclic_scc_count,repository,Number of cyclic strongly connected components in package import graph,Tarjan SCC on partial import graph,count,EXTRACTED,Only cycles in observed package import graph
+architecture_label,repository,Declared architectural style assigned during screening,Manifest plus evidence register,categorical,UNVERIFIED,Must be independently verified before supervised learning
+domain,repository,Application domain recorded during repository screening,Manifest,categorical,SCREENED,Domain boundaries may overlap; document coding protocol
+commit_sha,repository,Immutable source revision analyzed,Git rev-parse,hex string,VERIFIED,Must match manifest commit SHA for every record

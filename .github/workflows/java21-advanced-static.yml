@@ -1,0 +1,59 @@
+
+name: Java 21 advanced static dependency analysis
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+
+    paths:
+      - "data/java21_strict_manifest.csv"
+      - "scripts/advanced_static_analysis.py"
+      - ".github/workflows/java21-advanced-static.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-analysis:
+
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 35
+
+    steps:
+
+      - name: Checkout research protocol
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Verify toolchain
+        run: |
+          git --version
+          java -version
+          python --version
+
+      - name: Run package dependency graph analysis
+        run: |
+          python scripts/advanced_static_analysis.py
+
+      - name: Upload advanced static analysis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: java21-advanced-static-${{ github.run_id }}
+          path: results/advanced_static/**
+          if-no-files-found: warn
+          retention-days: 30

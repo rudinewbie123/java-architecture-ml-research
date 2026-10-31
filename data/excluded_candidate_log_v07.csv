@@ -1,0 +1,8 @@
+repository,commit_sha,possible_label,exclusion_reason
+spring-petclinic/spring-petclinic-modulith,58c3310e36c7d827959df6af4d64bdeb8d81f1ea,modular_monolith,Java 17 in pom.xml; fails strict Java 21 inclusion rule.
+xsreality/spring-modulith-with-ddd,bbbabe06d3af9ddd78c5699ca7b4dab36792ee8c,modular_monolith,Java 23 in pom.xml; fails strict Java 21 inclusion rule.
+victorrentea/spring-modulith,d48fca8cf9782ab0d870da2946df0ad8c23bc295,modular_monolith,Java 17 in pom.xml; fails strict Java 21 inclusion rule.
+teamlead/spring-microservices-kubernetes-demo,437c2fcdf85fb4b7e8d669ffc64d472b0e5b9484,microservices,Java 17 in root pom.xml; fails strict Java 21 inclusion rule.
+kbhujbal/ShopSphere---E-commerce-Microservice-Platform,635db8b131d886cbee3e1c78f1e4dd4cc3546def,microservices,Java 17 in root pom.xml; fails strict Java 21 inclusion rule.
+smit-lakhani-13/flight-ops-services,6db2673e0b9621aa840f039c962be5f69d1e1a78,hybrid candidate,"Java 21 confirmed, but README explicitly says Kubernetes/SAM deployment manifests are written and linted, never deployed; keep in design-intent side pool, not implemented-runtime sample."
+mzubal/spring-boot-monolith,67bb4d54a17ef93ab99e62a4347c24cd3a8b3bff,monolith,Java 8 in pom.xml; fails strict Java 21 inclusion rule.

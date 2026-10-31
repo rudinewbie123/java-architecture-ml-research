@@ -1,0 +1,112 @@
+
+name: HARMONY dataset quality gate
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+    paths:
+      - "data/java21_strict_manifest.csv"
+      - "data/architecture_label_evidence.csv"
+      - "data/feature_dictionary.csv"
+      - "scripts/ast/**"
+      - "scripts/run_ast_metrics.py"
+      - "scripts/validate_pilot_dataset.py"
+      - ".github/workflows/harmony-dataset-quality.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: harmony-dataset-quality-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  dataset-quality:
+    name: Extract and validate HARMONY dataset
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout research repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify execution environment
+        run: |
+          echo "=== SYSTEM ==="
+          uname -a
+          nproc
+          free -h
+          df -h .
+
+          echo "=== JAVA ==="
+          java -version
+          javac -version
+
+          echo "=== PYTHON ==="
+          python --version
+
+          echo "=== GIT ==="
+          git --version
+
+      - name: Download JavaParser dependency
+        run: |
+          mkdir -p tools
+
+          curl --fail --location --retry 3 \
+            https://repo.maven.apache.org/maven2/com/github/javaparser/javaparser-core/3.26.3/javaparser-core-3.26.3.jar \
+            --output tools/javaparser-core-3.26.3.jar
+
+          sha256sum tools/javaparser-core-3.26.3.jar
+
+      - name: Validate manifest availability
+        run: |
+          test -f data/java21_strict_manifest.csv
+          test -f data/architecture_label_evidence.csv
+          test -f data/feature_dictionary.csv
+          test -f scripts/run_ast_metrics.py
+          test -f scripts/ast/ArchitectureAstMetrics.java
+          test -f scripts/validate_pilot_dataset.py
+
+          echo "All required input files are available."
+
+      - name: Run Java 21 AST extraction
+        run: |
+          python scripts/run_ast_metrics.py
+
+      - name: Validate dataset provenance and structure
+        run: |
+          python scripts/validate_pilot_dataset.py
+
+      - name: Display dataset quality report
+        if: always()
+        run: |
+          if [ -f results/dataset_validation/dataset_quality_report.json ]; then
+            cat results/dataset_validation/dataset_quality_report.json
+          else
+            echo "Dataset quality report was not generated."
+          fi
+
+      - name: Upload HARMONY dataset artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: harmony-dataset-v04-${{ github.run_id }}
+          path: |
+            results/ast_metrics/**
+            results/dataset_validation/**
+          if-no-files-found: warn
+          retention-days: 60

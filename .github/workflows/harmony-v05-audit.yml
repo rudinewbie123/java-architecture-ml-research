@@ -1,0 +1,108 @@
+
+name: HARMONY v0.5 repository feature and label audit
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+    paths:
+      - "data/java21_strict_manifest.csv"
+      - "data/architecture_label_evidence_v05.csv"
+      - "scripts/ast/**"
+      - "scripts/run_ast_metrics.py"
+      - "scripts/build_harmony_v05_audit.py"
+      - ".github/workflows/harmony-v05-audit.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: harmony-v05-audit-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  repository-audit:
+    name: HARMONY v0.5 Dataset Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout research repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify environment
+        run: |
+          echo "=== JAVA VERSION ==="
+          java -version
+
+          echo "=== PYTHON VERSION ==="
+          python --version
+
+          echo "=== GIT VERSION ==="
+          git --version
+
+          echo "=== RUNNER RESOURCES ==="
+          nproc
+          free -h
+          df -h .
+
+      - name: Download pinned JavaParser dependency
+        run: |
+          mkdir -p tools
+
+          curl --fail --location --retry 3 \
+            https://repo.maven.apache.org/maven2/com/github/javaparser/javaparser-core/3.26.3/javaparser-core-3.26.3.jar \
+            --output tools/javaparser-core-3.26.3.jar
+
+          sha256sum tools/javaparser-core-3.26.3.jar
+
+      - name: Validate required inputs
+        run: |
+          test -f data/java21_strict_manifest.csv
+          test -f data/architecture_label_evidence_v05.csv
+          test -f scripts/run_ast_metrics.py
+          test -f scripts/ast/ArchitectureAstMetrics.java
+          test -f scripts/build_harmony_v05_audit.py
+
+          echo "All required files are available."
+
+      - name: Re-extract AST from pinned repository commits
+        run: |
+          python scripts/run_ast_metrics.py
+
+      - name: Build repository-level features and label audit
+        run: |
+          python scripts/build_harmony_v05_audit.py
+
+      - name: Display HARMONY audit report
+        if: always()
+        run: |
+          if [ -f results/harmony_v05/harmony_v05_audit_report.json ]; then
+            cat results/harmony_v05/harmony_v05_audit_report.json
+          else
+            echo "HARMONY v0.5 report was not generated."
+          fi
+
+      - name: Upload HARMONY v0.5 artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: harmony-v05-repository-audit-${{ github.run_id }}
+          path: |
+            results/ast_metrics/**
+            results/harmony_v05/**
+          if-no-files-found: warn
+          retention-days: 60

@@ -1,0 +1,48 @@
+name: Java 21 repository build + static extraction
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "data/java21_strict_manifest.csv"
+      - ".github/workflows/java21-static-build.yml"
+      - "scripts/**"
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout research protocol
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Set up Java 21 and Maven
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Verify toolchain
+        run: |
+          java -version
+          mvn -version
+          python --version
+      - name: Install static-analysis dependency
+        run: python -m pip install --upgrade pip lizard
+      - name: Clone pinned repositories, build, and collect features
+        run: python scripts/run_cohort.py
+      - name: Upload empirical outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: java21-pilot-${{ github.run_id }}
+          path: results/**
+          if-no-files-found: warn
+          retention-days: 30

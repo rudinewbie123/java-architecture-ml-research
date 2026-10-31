@@ -1,0 +1,6 @@
+candidate_id,declared_architecture_label,evidence_url,evidence_type,reviewer_id,verification_status,independent_reviewer_2,reviewer_2_status,rationale,review_date
+JAVA-P013,modular_monolith,,,,UNVERIFIED,,UNVERIFIED,,
+JAVA-P014,modular_monolith,,,,UNVERIFIED,,UNVERIFIED,,
+JAVA-P012,modular_monolith,,,,UNVERIFIED,,UNVERIFIED,,
+JAVA-P005,microservices,,,,UNVERIFIED,,UNVERIFIED,,
+JAVA-P009,serverless_hybrid,,,,UNVERIFIED,,UNVERIFIED,,

@@ -1,0 +1,6 @@
+review_id,candidate_id,reviewer_id,review_date,deployment_unit_count,independent_deployment,inter_unit_communication,data_ownership_boundary,module_service_boundary,serverless_function_evidence,proposed_label,confidence_1_5,evidence_url,rationale
+R001,JAVA-P013,,,,,,,,,,,
+R002,JAVA-P014,,,,,,,,,,,
+R003,JAVA-P012,,,,,,,,,,,
+R004,JAVA-P005,,,,,,,,,,,
+R005,JAVA-P009,,,,,,,,,,,

@@ -1,0 +1,6 @@
+candidate_id,repository,commit_sha,architecture_label,domain,java_target,build_tool,screening_status
+JAVA-P013,diegolopes98/ecommerce-modular-monolith,76c3bfd38e3ac6e3d7a811697dd24a3f7afba9e5,modular_monolith,E-commerce,21,Maven,CANDIDATE
+JAVA-P014,piomin/sample-spring-modulith,4d64aa4d321c4a2446bdfb7cc3cb378a38d48dd7,modular_monolith,Organization-HR,21,Maven,CANDIDATE
+JAVA-P012,odrotbohm/spring-modular-monolith,6d23a62890d82e93031b8aae9eb9b815bbe9b5a4,modular_monolith,E-commerce-bookstore,21,Maven,CANDIDATE
+JAVA-P005,hoangtien2k3/ecommerce-microservices,2d687821f8246f426e536641cd0503cb15465275,microservices,E-commerce,21,Maven,CANDIDATE
+JAVA-P009,mrahbari/serverless-fintech-style-backend-system,080001c400a3b908381c2b6eb7009b1121b1c314,serverless_hybrid,Fintech-wallet,21,Maven,CANDIDATE

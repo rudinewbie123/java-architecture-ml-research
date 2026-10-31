@@ -1,0 +1,1 @@
+The manifest contains immutable pilot commit pins. Do not change a SHA without creating a new dataset version.\n
